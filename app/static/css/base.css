@@ -1,0 +1,355 @@
+/* Variáveis e Reset */
+:root {
+  --amarelo: #FFC756;
+  --laranja: #F66139;
+  --lilas: #7F8FFE;
+  --verde: #56B78C;
+  --cinza-claro: #D9D9D9;
+  --cinza-escuro: #959595;
+  --fonte-primaria: 'Work Sans', sans-serif;
+  --fonte-secundaria: 'Fjalla One', sans-serif;
+  --roxo-botao: rgb(138, 51, 165);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--fonte-primaria);
+  margin: 0;
+}
+
+/* HEADER */
+.menu {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+  background-color: black;
+  font-family: var(--fonte-secundaria);
+  font-size: 16px;
+  padding: 1rem 2rem;
+  gap: 1rem;
+}
+
+.menu__pesquisar {
+  flex-grow: 1;
+  max-width: 384px;
+  border: 2px solid white;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.menu__input {
+  width: 100%;
+  padding-left: 10px;
+  background-color: black;
+  color: white;
+  border: none;
+  background-image: url("../img/icone-busca.png");
+  background-repeat: no-repeat;
+  background-position: right;
+  font-size: 16px;
+  outline: none;
+}
+
+/* MAIN */
+.principal {
+  padding: 1rem 2rem;
+}
+
+/* FOOTER */
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  background-color: black;
+  color: var(--cinza-claro);
+  font-size: 18px;
+  padding: 2rem;
+  line-height: 1.6;
+}
+
+.rodape__lista {
+  margin: 0 1rem;
+  min-width: 135px;
+  list-style: none;
+}
+
+.rodape__titulo a{
+  font-family: var(--fonte-secundaria);
+  font-size: 18px;
+  margin-bottom: 0.5rem;
+}
+
+.rodape__logo {
+  align-self: end;
+  text-align: center;
+  font-size: 12px;
+}
+
+.logo-header,
+.logo-footer {
+  height: auto;
+  max-width: 100px;
+  transition: 0.3s;
+}
+
+.logo-header:hover,
+.logo-footer:hover {
+  opacity: 0.7;
+}
+
+/* LINKS DE CATEGORIA ATIVOS */
+.categorias.ativo,
+.rodape_link.ativo {
+  font-weight: bold;
+}
+
+.rodape_link, .categorias{
+	text-decoration: none;
+}
+
+
+/* FLASH MESSAGES */
+.flashes {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.flash {
+  padding: 1rem;
+  border-radius: 4px;
+  color: white;
+  background-color: var(--laranja);
+  margin-bottom: 0.5rem;
+}
+
+.flash.success {
+  background-color: #28a745;
+}
+
+.flash.error {
+  background-color: #dc3545;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex-grow: 1;
+}
+
+/* Transições suaves */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body,
+.navbar,
+footer,
+.card,
+.alert,
+.btn,
+.table {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Tema escuro personalizado */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #121212;
+  --bs-body-color: #f1f3f5;
+
+  --bs-border-color: #444;
+
+  /* Cores adaptadas para navbar/footer */
+  --bs-body-tertiary-bg: #1f1f1f; /* navbar */
+  --bs-body-secondary-bg: #1f1f1f; /* footer */
+
+  --bs-card-bg: #1c1c1c;
+  --bs-card-color: #e9ecef;
+
+  --bs-link-color: #66b2ff;
+  --bs-link-hover-color: #ffffff;
+
+  --bs-alert-bg: #222;
+  --bs-alert-color: #f8f9fa;
+
+  --bs-btn-bg: #333;
+  --bs-btn-border-color: #555;
+}
+
+/* Links adaptativos */
+[data-bs-theme="dark"] a.nav-link,
+[data-bs-theme="dark"] a.text-body,
+[data-bs-theme="dark"] .navbar-nav .nav-link {
+  color: #f1f3f5;
+}
+
+[data-bs-theme="dark"] a.nav-link:hover,
+[data-bs-theme="dark"] .navbar-nav .nav-link:hover {
+  color: #ffffff;
+}
+
+/* Botão de tema */
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #f1f3f5;
+  border-color: #666;
+}
+
+/* Estado base */
+.link-destaque {
+  color: var(--bs-body-color);
+}
+
+/* Estado ativo ou em destaque no modo claro */
+[data-bs-theme="light"] .link-destaque.ativo,
+[data-bs-theme="light"] {
+  color: #9c27b0; /* $purple-500 */
+  font-weight: bold;
+}
+
+/* Estado ativo ou em destaque no modo escuro */
+[data-bs-theme="dark"] .link-destaque.ativo,
+[data-bs-theme="dark"]{
+  color: #994fa7; /* $indigo-400 */
+  font-weight: bold;
+}
+
+/*para a animação de hover nos cards dos anuncios*/
+.anuncio-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.anuncio-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem;
+  border-bottom-left-radius: 8px;
+  display: none;
+  z-index: 10;
+}
+
+[data-bs-theme="dark"] .anuncio-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.anuncio-card:hover .anuncio-overlay {
+  display: flex;
+  gap: 0.5rem;
+}
+
+ .zoom-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  #zoom-lens {
+  display: none;
+  position: absolute;
+  width: 155px;
+  height: 155px;
+  border: none;
+  border-radius: 4px;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  cursor: crosshair;
+}
+
+
+
+  .zoom-wrapper:hover #zoom-lens {
+    display: block;
+  }
+
+  .zoom-wrapper:hover {
+  cursor: crosshair;
+}
+.group-card:hover .card-hover-button {
+  color: var(--roxo-botao);;
+  border: 1px solid var(--roxo-botao);;
+  background-color: transparent;;
+  }
+
+  .anuncio-card {
+  min-height: 480px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+.anuncio-card .card-body {
+  flex-grow: 1;
+}
+.anuncio-card .card-img-top {
+  height: 200px;
+  object-fit: contain;
+}
+
+.categoria-item:hover {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  .required-label::after {
+    content: " *";
+    color: rgb(230, 57, 57);
+  }
+
+  .hover-raise {
+    transition: transform 0.2s ease;
+  }
+
+  .hover-raise:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Realça o botão ao passar no card do adm */
+  .hover-raise:hover .btn {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .pointer-none {
+    pointer-events: none; /* para evitar clique duplicado no botão */
+  }
+
+  /*mudar as cores dos botões para purple na home*/
+  .btn-purple {
+  color: var(--roxo-botao);;
+  border: 1px solid var(--roxo-botao);;
+  background-color: transparent;
+}
+
+.btn-purple:hover {
+  background-color: var(--roxo-botao);
+  color: white;
+}
+
+/*confiração de botao para os cards*/
+.btn-purple-card{
+  background-color: var(--roxo-botao);
+  color: white;
+}
+
+.btn-purple-card:hover{
+  color: var(--roxo-botao);;
+  border: 1px solid var(--roxo-botao);;
+  background-color: transparent;
+}
+
+.tag-purple{
+  background-color: var(--roxo-botao);
+  color: white;
+  cursor: default;
+  padding: 8px;
+}

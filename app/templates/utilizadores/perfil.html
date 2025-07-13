@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block titulo %}Meu Perfil{% endblock %} {% block conteudo %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Área Pessoal</h2>
+
+  <div class="row justify-content-center g-4">
+    <!-- Cartão de informações do utilizador -->
+    <div class="col-md-5">
+      <div class="card shadow-sm text-center p-4">
+        {% if current_user.foto_perfil %}
+        <img
+          src="{{ url_for('static', filename='uploads/perfis/' ~ current_user.foto_perfil) }}"
+          alt="Foto de Perfil"
+          class="rounded-circle border border-secondary mb-3 mx-auto d-block"
+          style="width: 120px; height: 120px; object-fit: cover"
+        />
+
+        {% else %}
+        <img
+          src="{{ url_for('static', filename='img/default-user.png') }}"
+          alt="Foto padrão"
+          class="rounded-circle border border-secondary mb-3 mx-auto d-block"
+          style="width: 120px; height: 120px; object-fit: cover"
+        />
+
+        {% endif %}
+
+        <h4 class="mb-1">{{ current_user.nome }}</h4>
+        <p class="mb-1">{{ current_user.email }}</p>
+        <small class="text-muted">Membro desde: {{ current_user.data_registo.strftime('%d/%m/%Y') }}</small>
+
+        <div class="mt-4">
+          <a href="{{ url_for('utilizadores.editar_perfil') }}" class="btn btn-primary mb-2">Editar Perfil</a>
+
+          <form
+            method="POST"
+            action="{{ url_for('utilizadores.eliminar_conta') }}"
+            onsubmit="return confirm('Tem a certeza que deseja eliminar a sua conta? Esta ação é irreversível.')"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button class="btn btn-danger" type="submit">Eliminar Conta</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cartão de atalhos -->
+    <div class="col-md-5">
+      <div class="card shadow-sm text-center p-4">
+        <h5 class="mb-3">Atalhos</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2">
+            <a href="{{ url_for('utilizadores.favoritos') }}" class="btn btn-outline-warning w-100">
+              ⭐ Favoritos ({{ current_user.favoritos.count() }})
+            </a>
+          </li>
+          <li class="mb-2">
+            <a href="{{ url_for('utilizadores.meus_anuncios') }}" class="btn btn-outline-info w-100">
+              🎵 Meus Anúncios ({{ current_user.anuncios.count() }})
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('mensagens.caixa_entrada') }}" class="btn btn-outline-secondary w-100">
+              📨 Mensagens ({{ current_user.mensagens_recebidas.filter_by(lida=False).count() }})
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

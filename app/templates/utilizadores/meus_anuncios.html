@@ -1,0 +1,91 @@
+{% extends "base.html" %} {% block titulo %}Meus Anúncios{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold d-flex align-items-center gap-2"><i class="bi bi-music-note-list"></i> Meus Anúncios</h2>
+  </div>
+
+  {% if anuncios.total == 0 %}
+  <div class="alert alert-info text-center">Ainda não criou nenhum anúncio.</div>
+  <div class="text-center">
+    <a href="{{ url_for('anuncios.criar') }}" class="btn btn-primary">Criar Anúncio</a>
+  </div>
+  {% else %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    {% for anuncio in anuncios.items %}
+    <div class="col">
+      <div
+        class="card h-100 shadow-sm position-relative group-card"
+        style="max-height: 500px; max-width: 300px; margin: 10px; padding: 15px"
+      >
+        <div
+          class="d-flex justify-content-center align-items-center bg-transparent pb-2"
+          style="height: 200px; border-radius: 5px"
+        >
+          <img
+            src="{{ url_for('static', filename='uploads/' + anuncio.imagem) }}"
+            alt="{{ anuncio.titulo }}"
+            class="img-fluid"
+            style="height: 100%; width: auto; object-fit: contain"
+            onerror="this.remove();"
+          />
+        </div>
+
+        <h3 class="h5">{{ anuncio.titulo }}</h3>
+        <h4 class="h6 text-muted">{{ anuncio.artista }}</h4>
+        <h5 class="text-muted">{% if anuncio.ano %}{{anuncio.ano}}{%endif%}</h5>
+        <p class="text-success fw-semibold">{{ "%.2f"|format(anuncio.preco) }} €</p>
+        <span class="badge {% if anuncio.estado == 'vendido' %} bg-danger {% else %} bg-success {% endif %}">
+          {{ anuncio.estado|capitalize }}
+        </span>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a href="{{ url_for('anuncios.editar', id=anuncio.id) }}" class="btn btn-outline-primary btn-sm">Editar</a>
+
+          <form method="POST" action="{{ url_for('anuncios.eliminar', id=anuncio.id) }}" style="display: inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button
+              class="btn btn-outline-danger btn-sm"
+              onclick="return confirm('Tem a certeza que deseja eliminar este anúncio?')"
+            >
+              Eliminar
+            </button>
+          </form>
+
+          {% if current_user.papel == 'admin' %}
+          <form method="POST" action="{{ url_for('anuncios.eliminar_definitivo', id=anuncio.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button class="btn btn-danger btn-sm">Eliminar Permanente</button>
+          </form>
+          {% endif %}
+
+          <a href="{{ url_for('anuncios.detalhes', id=anuncio.id) }}" class="btn btn-outline-success btn-sm">Ver</a>
+
+          <form method="POST" action="{{ url_for('anuncios.marcar_vendido', id=anuncio.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button class="btn btn-warning btn-sm">
+              {% if anuncio.estado == 'vendido' %} Marcar como Disponível {% else %} Marcar como Vendido {% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% endif %}
+
+  <nav aria-label="Navegação da página" class="mt-5">
+    <ul class="pagination justify-content-center">
+      {% for page_num in anuncios.iter_pages() %} {% if page_num %}
+      <li class="page-item {% if page_num == anuncios.page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('utilizadores.meus_anuncios', pagina=page_num) }}">{{ page_num }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %} {% endfor %}
+    </ul>
+  </nav>
+</div>
+
+{% endblock %}

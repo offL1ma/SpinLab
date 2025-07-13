@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block titulo %}Gerir Anúncios{% endblock %}
+
+{% block conteudo %}
+<div class="container mt-5">
+  <h2 class="fw-bold mb-4">Anúncios</h2>
+
+  <!-- Filtro por ID -->
+  <form method="get" action="{{ url_for('admin.gerir_anuncios') }}" class="row g-3 align-items-end mb-3">
+    <div class="col-auto">
+      <label for="id" class="form-label">Pesquisar por ID:</label>
+      <input type="number" name="id" class="form-control" placeholder="ID do anúncio" />
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Pesquisar</button>
+    </div>
+  </form>
+
+  <!-- Filtro por estado -->
+  <form method="get" action="{{ url_for('admin.gerir_anuncios') }}" class="row g-3 align-items-end mb-4">
+    <div class="col-auto">
+      <label for="filtro" class="form-label">Filtro:</label>
+      <select name="filtro" class="form-select" onchange="this.form.submit()">
+        <option value="todos" {% if filtro == 'todos' %}selected{% endif %}>Todos</option>
+        <option value="eliminados" {% if filtro == 'eliminados' %}selected{% endif %}>Eliminados</option>
+      </select>
+    </div>
+  </form>
+  <div class="row mb-4">
+  <div class="col-md-6" >
+    <div class="card shadow-sm" style="align-items:center;" >
+      <div class="card-body" style="height:200px; margin: 10px" >
+        <h5 class="card-title text-center">Anuncios disponíveis e vendidos</h5>
+        <canvas id="graficoEstado" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm" style="align-items:center;">
+      <div class="card-body" style="height:200px; margin: 10px;">
+        <h5 class="card-title text-center">Anúncios por Categoria</h5>
+        <canvas id="graficoCategorias" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Tabela de anúncios -->
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>ID criador</th>
+          <th>Título</th>
+          <th>Artista</th>
+          <th>Preço</th>
+          <th>Estado</th>
+          <th>Data</th>
+          <th colspan="2">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for anuncio in anuncios.items %}
+        <tr>
+          <td>{{ anuncio.id }}</td>
+          <td>{{ anuncio.utilizador_id }}</td>
+          <td>{{ anuncio.titulo }}</td>
+          <td>{{ anuncio.artista }}</td>
+          <td>{{ anuncio.preco }} €</td>
+          <td>{{ anuncio.estado }}</td>
+          <td>{{ anuncio.data_criacao.strftime('%d/%m/%Y') }}</td>
+          <td class="d-flex flex-wrap gap-2">
+            {% if anuncio.eliminado %}
+            <form method="post" action="{{ url_for('admin.restaurar_anuncio', id=anuncio.id) }}">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-success btn-sm">Restaurar</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.eliminar_definitivo', id=anuncio.id) }}"
+              onsubmit="return confirm('Eliminar permanentemente?')">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+            </form>
+            {% else %}
+            <a href="{{ url_for('anuncios.editar', id=anuncio.id) }}" class="btn btn-outline-warning btn-sm">Editar</a>
+            <form method="post" action="{{ url_for('admin.eliminar_definitivo', id=anuncio.id) }}"
+              onsubmit="return confirm('Eliminar permanentemente?')">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const estadoCtx = document.getElementById("graficoEstado").getContext("2d");
+  new Chart(estadoCtx, {
+    type: "pie",
+    data: {
+      labels: {{ dados_estados.labels|tojson }},
+      datasets: [{
+        data: {{ dados_estados.valores|tojson }},
+        backgroundColor: ["#198754", "#dc3545"],
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: "bottom" }
+      }
+    }
+  });
+
+  const categoriaCtx = document.getElementById("graficoCategorias").getContext("2d");
+  new Chart(categoriaCtx, {
+    type: "bar",
+    data: {
+      labels: {{ dados_categorias.labels|tojson }},
+      datasets: [{
+        label: "Quantidade",
+        data: {{ dados_categorias.valores|tojson }},
+        backgroundColor: "#0d6efd"
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

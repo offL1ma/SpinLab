@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block titulo %}Editar Perfil de Utilizador{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  <div class="card shadow p-4 mx-auto" style="max-width: 600px">
+    <h1 class="text-center mb-4">Editar Perfil de Utilizador</h1>
+
+    <form method="POST">
+      {{ form.hidden_tag() }} {% for field, errors in form.errors.items() %} {% for error in errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endfor %} {% endfor %}
+
+      <div class="mb-3">{{ form.nome.label(class="form-label") }} {{ form.nome(class="form-control") }}</div>
+
+      <div class="mb-3">{{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }}</div>
+
+      <div class="mb-3">{{ form.senha.label(class="form-label") }} {{ form.senha(class="form-control") }}</div>
+
+      <div class="mb-3">
+        {{ form.confirmar_senha.label(class="form-label") }} {{ form.confirmar_senha(class="form-control") }}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Atualizar Perfil</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

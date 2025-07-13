@@ -1,0 +1,77 @@
+{% extends "base.html" %} {% block titulo %} {% if admin_view %} Conversa (Admin) {% else %} Conversa com {{
+parceiro.nome }} {% endif %} {% endblock %} {% block conteudo %}
+
+<div class="container mt-4">
+  {% if admin_view %}
+  <div class="alert alert-warning">
+    <h5 class="mb-2"><i class="bi bi-shield-lock"></i> Visualização de Admin</h5>
+    <p><strong>Utilizador 1:</strong> {{ utilizador1.nome }} (ID: {{ utilizador1.id }})</p>
+    <p><strong>Utilizador 2:</strong> {{ utilizador2.nome }} (ID: {{ utilizador2.id }})</p>
+  </div>
+  {% else %}
+  <h2 class="fw-bold mb-4">Mensagens com {{ parceiro.nome }}</h2> {% if anuncio %}
+  <h4 class="text-secondary">Artigo: <strong>{{ anuncio.titulo }} - {{anuncio.artista}}</strong></h4>
+{% endif %}
+
+  {% endif %}
+
+  <!-- Mensagens -->
+  <div class="d-flex flex-column gap-3 mb-5">
+    {% for msg in mensagens %}
+    <div
+      class="d-flex {% if msg.remetente == current_user %}justify-content-end{% else %}justify-content-start{% endif %}"
+    >
+      {% if msg.remetente != current_user %}
+      <img
+        src="{% if msg.remetente.foto_perfil %}{{ url_for('static', filename='uploads/perfis/' ~ msg.remetente.foto_perfil) }}{% else %}{{ url_for('static', filename='img/default-user.png') }}{% endif %}"
+        alt="{{ msg.remetente.nome }}"
+        class="rounded-circle me-2"
+        style="width: 36px; height: 36px; object-fit: cover"
+      />
+      {% endif %}
+
+      <div
+        class="card {% if msg.remetente == current_user %}bg-body-secondary text-end{% else %}bg-body-tertiary{% endif %} shadow-sm"
+        style="max-width: 75%"
+      >
+        <div class="card-body p-3">
+          {% if current_user.papel == 'admin' %}
+          <p class="mb-1 fw-semibold small">{{ msg.remetente.nome }} (ID: {{ msg.remetente_id }})</p>
+          {% elif msg.remetente != current_user %}
+          <p class="mb-1 fw-semibold small">{{ msg.remetente.nome }}</p>
+          {% endif %}
+
+          <p class="mb-2">{{ msg.conteudo }}</p>
+          <small class="text-muted d-block">{{ msg.data_envio.strftime('%d/%m/%Y %H:%M') }}</small>
+
+          {% if current_user.papel == 'admin' %}
+          <small class="text-muted d-block"><em>Anúncio ID: {{ msg.anuncio_id }}</em></small>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Resposta -->
+  {% if not admin_view %}
+  <div class="card shadow-sm mx-auto" style="max-width: 700px">
+    <div class="card-body">
+      <h4 class="mb-3">Responder</h4>
+      <form method="POST" action="{{ url_for('mensagens.responder_mensagem', destinatario_id=parceiro.id, anuncio_id=anuncio.id if anuncio else None) }}">
+        {{ form.hidden_tag() }} {% for field, errors in form.errors.items() %} {% for error in errors %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %} {% endfor %}
+
+        <div class="mb-3">
+          {{ form.conteudo.label(class="form-label") }} {{ form.conteudo(class="form-control", rows=4) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

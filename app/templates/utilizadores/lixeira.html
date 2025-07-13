@@ -1,0 +1,72 @@
+{% extends "base.html" %} {% block titulo %}Anúncios Eliminados{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in
+  messages %}
+  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <section class="eventos">
+    <h2 class="eventos__titulo fw-bold mb-4">Anúncios Eliminados</h2>
+    <div class="form-text">Os anúncios eliminados são removidos após 7 dias. Anúncios eliminados permanentemente não podem ser restaurados.</div>
+
+    {% if anuncios.total == 0 %}
+    <div class="alert alert-info text-center">Não há anuncios na eliminados no momento.</div>
+    <div class="text-center">
+      <a href="{{ url_for('anuncios.criar') }}" class="btn btn-success">Criar Anúncio</a>
+    </div>
+    {% else %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3 align-items-stretch">
+  {% for anuncio in anuncios.items %}
+  <div class="col">
+    <div class="card h-100 shadow-sm position-relative" style="max-height: 500px">
+      <div class="bg-transparent" style="height: 200px; overflow: hidden">
+        <img
+          src="{{ url_for('static', filename='uploads/' + anuncio.imagem) }}"
+          class="card-img-top img-fluid"
+          alt="{{ anuncio.titulo }}"
+          style="width: 100%; height: 100%; object-fit: contain"
+          onerror="this.remove();"
+        />
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">{{ anuncio.titulo }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ anuncio.artista }} – {{ anuncio.ano }}</h6>
+      </div>
+      <div class="card-footer d-flex justify-content-between flex-wrap gap-2">
+        <form method="POST" action="{{ url_for('anuncios.restaurar', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-primary btn-sm">Restaurar</button>
+        </form>
+        <form method="POST" action="{{ url_for('anuncios.eliminar_definitivo', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-outline-danger btn-sm">Excluir em definitivo</button>
+        </form>
+        <a href="{{ url_for('anuncios.detalhes', id=anuncio.id) }}" class="btn btn-outline-success btn-sm">
+          Ver
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+    {% endif %} {% if anuncios.pages > 1 %}
+    <nav class="paginacao mt-4" aria-label="Paginação">
+      <ul class="pagination justify-content-center">
+        {% for page_num in anuncios.iter_pages() %} {% if page_num %}
+        <li class="page-item {% if page_num == anuncios.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('anuncios.lixeira', pagina=page_num) }}">{{ page_num }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %} {% endfor %}
+      </ul>
+    </nav>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+# Ambiente virtual
+venv/
+.env
+
+# Ficheiros compilados
+__pycache__/
+*.pyc
+
+# Dados locais
+*.db
+*.sqlite3
+*.log
+
+# Outros
+.DS_Store

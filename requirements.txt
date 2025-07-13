@@ -1,0 +1,12 @@
+Flask
+Flask-WTF
+Flask-SQLAlchemy
+Flask-Login
+Flask-Migrate
+Flask-Limiter
+email-validator
+WTForms
+python-dotenv
+APScheduler
+psycopg2-binary
+gunicorn

@@ -1,0 +1,236 @@
+{% extends "base.html" %} {% block titulo %}{{ anuncio.titulo }}{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  <h2 class="text-center fw-bold mb-4">
+    {{ anuncio.titulo }}
+    <div class="card-text text-success" style="display: contents">{{anuncio.preco}} €</div>
+  </h2>
+
+  <div class="content-wrapper d-flex flex-row flex-wrap justify-content-center align-items-start gap-4 pb-5">
+    <!-- imagem principal na exibicao-->
+    <div class="zoom-wrapper position-relative border rounded overflow-hidden" style="width: 500px; height: 400px">
+      <img
+        id="imagem-principal"
+        src="{{ url_for('static', filename='uploads/' + anuncio.imagem) }}"
+        alt="Imagem Principal"
+        class="w-100 h-100"
+        style="object-fit: contain"
+        loading="lazy"
+        onerror="this.remove();"
+      />
+      <div id="zoom-lens"></div>
+    </div>
+
+    <!-- miniaturas img -->
+    <div class="d-flex flex-column flex-wrap gap-2">
+      {% for img in anuncio.imagens %}
+      <img
+        loading="lazy"
+        src="{{ url_for('static', filename='uploads/' + img.nome_arquivo) }}"
+        alt="Miniatura"
+        onclick="document.getElementById('imagem-principal').src = this.src"
+        class="rounded border"
+        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer; transition: transform 0.2s"
+        onerror="this.remove();"
+      />
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- detalhes -->
+  <div class="card shadow mx-auto" style="max-width: 600px">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Detalhes do Anúncio</h5>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Artista/Banda:</strong> {{ anuncio.artista }}</li>
+
+        {% if anuncio.ano %}
+        <li class="list-group-item"><strong>Ano:</strong> {{ anuncio.ano }}</li>
+        {% endif %}
+
+        <li class="list-group-item"><strong>Preço:</strong> {{ "%.2f"|format(anuncio.preco) }} €</li>
+        <li class="list-group-item"><strong>Formato:</strong> {{ anuncio.formato }}</li>
+
+        {% if anuncio.dimensoes_cm %}
+        <li class="list-group-item"><strong>Dimensões:</strong> {{ anuncio.dimensoes_cm }}</li>
+        {% endif %}
+
+        <li class="list-group-item"><strong>Estado:</strong> {{ anuncio.estado|capitalize }}</li>
+
+        <li class="list-group-item">
+          <strong>Categorias:</strong>
+          {% if anuncio.categorias %} {% for cat in anuncio.categorias %}{{ cat.nome }}{% if not loop.last %}, {% endif
+          %}{% endfor %} {% else %} Nenhuma {% endif %}
+        </li>
+        {% if anuncio.tags %}
+        <li class="list-group-item">
+          <strong>Tags:</strong>
+          {% for tag in anuncio.tags %}
+          <span class="badge rounded-pill tag-purple" style="margin: 2px">{{ tag.nome }}</span>
+          {% endfor %}
+        </li>
+        {% endif %}
+      </ul>
+
+      {% if anuncio.descricao %}
+      <p class="mt-4">{{ anuncio.descricao }}</p>
+      {% endif %} {% if anuncio.vendido %}
+      <div class="mt-3 text-center">
+        <span class="badge bg-danger fs-6">Vendido</span>
+      </div>
+      {% endif %}
+      <!-- aacoes -->
+      <div class="mt-4 d-flex flex-wrap gap-2 justify-content-start">
+        {% if current_user.is_authenticated and anuncio.criador.id != current_user.id %}
+        <form method="POST" action="{{ url_for('anuncios.toggle_favorito', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn btn-outline-danger">
+            {% if current_user.favoritos.filter_by(anuncio_id=anuncio.id).first() %}
+            <i class="bi bi-heart-fill"></i> Remover dos Favoritos {% else %} <i class="bi bi-heart"></i> Adicionar aos
+            Favoritos {% endif %}
+          </button>
+        </form>
+
+        <a
+          href="{{ url_for('mensagens.enviar_mensagem', destinatario_id=anuncio.criador.id, anuncio_id=anuncio.id) }}"
+          class="btn btn-outline-primary"
+        >
+          Contactar Vendedor
+        </a>
+        {% endif %} {% if current_user == anuncio.criador or current_user.papel == 'admin' %}
+        <a href="{{ url_for('anuncios.editar', id=anuncio.id) }}" class="btn btn-warning">Editar</a>
+
+        {% if current_user.papel == 'admin' %}
+        <form method="POST" action="{{ url_for('anuncios.eliminar_definitivo', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-danger">Eliminar Definitivamente</button>
+        </form>
+        {% else %}
+        <form method="POST" action="{{ url_for('anuncios.eliminar', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-danger">Eliminar</button>
+        </form>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('anuncios.marcar_vendido', id=anuncio.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-success">
+            {% if anuncio.vendido %} Marcar como Disponível {% else %} Marcar como Vendido {% endif %}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- comentarios -->
+  <h4 class="mb-4"><i class="bi bi-chat-dots"></i> Comentários</h4>
+
+  {% if current_user.is_authenticated %}
+  <form method="POST" class="mb-4">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.conteudo.label(class="form-label") }} {{ form.conteudo(class="form-control", rows=3, placeholder="Escreva algo...") }}
+    </div>
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Publicar</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-warning">
+    <i class="bi bi-lock"></i>
+    <a href="{{ url_for('auth.login') }}" class="alert-link">Inicie sessão</a> para comentar.
+  </div>
+  {% endif %} {% if anuncio.comentarios %}
+  <div class="d-flex flex-column gap-3">
+    {% for comentario in anuncio.comentarios %}
+    <div class="p-3 rounded shadow-sm bg-body-secondary position-relative">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <strong class="link-body-emphasis">{{ comentario.utilizador.nome }}</strong>
+        <small class="text-muted">{{ comentario.data.strftime('%d/%m/%Y %H:%M') }}</small>
+      </div>
+      <p class="mb-2 text-body">{{ comentario.conteudo }}</p>
+
+      {% if current_user.is_authenticated and (current_user == comentario.utilizador or current_user.papel == 'admin')
+      %}
+      <form
+        method="POST"
+        action="{{ url_for('anuncios.eliminar_comentario', id=comentario.id) }}"
+        class="position-absolute top-0 pt-5 end-0 m-2"
+      >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button
+          class="btn btn-sm btn-outline-danger"
+          title="Eliminar"
+          onclick="return confirm('Eliminar este comentário?')"
+        >
+          <i class="bi bi-trash"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">Ainda não há comentários.</p>
+  {% endif %}
+</div>
+<script>
+  const lens = document.getElementById("zoom-lens");
+  const img = document.getElementById("imagem-principal");
+  const wrapper = document.querySelector(".zoom-wrapper");
+
+  const lensSize = 150;
+
+  wrapper.addEventListener("mousemove", function (e) {
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+
+    const x = e.clientX - imgRect.left;
+    const y = e.clientY - imgRect.top;
+
+    let offsetX = x - lensSize / 2;
+    let offsetY = y - lensSize / 2;
+    const lensX = x - lensSize / 2;
+    const lensY = y - lensSize / 2;
+
+    // Corrige para manter o centro da lente sobre o rato
+    if (offsetX < 0) offsetX = 0;
+    if (offsetY < 0) offsetY = 0;
+    if (offsetX + lensSize > img.clientWidth) offsetX = img.clientWidth - lensSize;
+    if (offsetY + lensSize > img.clientHeight) offsetY = img.clientHeight - lensSize;
+
+    lens.style.left = `${offsetX}px`;
+    lens.style.top = `${offsetY}px`;
+    lens.style.width = `${lensSize}px`;
+    lens.style.height = `${lensSize}px`;
+
+    lens.style.backgroundImage = `url('${img.src}')`;
+    lens.style.backgroundSize = `${img.clientWidth * 2}px ${img.clientHeight * 2}px`;
+    lens.style.backgroundPosition = `-${offsetX * 2}px -${offsetY * 2}px`;
+  });
+
+  wrapper.addEventListener("mouseenter", () => (lens.style.display = "block"));
+  wrapper.addEventListener("mouseleave", () => (lens.style.display = "none"));
+</script>
+
+<!-- converter para string antes de enviar para a rota -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tagInput = document.querySelector("#tag-input");
+    if (tagInput) {
+      const tagify = new Tagify(tagInput, {
+        delimiters: ",",
+        dropdown: { enabled: 0 },
+      });
+
+      // Converte para string antes de enviar o form
+      tagInput.closest("form").addEventListener("submit", () => {
+        const valores = tagify.value.map((t) => t.value.trim()).filter(Boolean);
+        tagInput.value = valores.join(", ");
+      });
+    }
+  });
+</script>
+
+{% endblock %}

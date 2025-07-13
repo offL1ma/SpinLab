@@ -1,0 +1,182 @@
+{% extends "base.html" %} {% block titulo %}Criar Anúncio{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  <div class="card shadow p-4 mx-auto" style="max-width: 700px">
+    <h2 class="fw-bold mb-4"><i class="bi bi-plus-circle"></i> Novo Anúncio</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }} {% for field, errors in form.errors.items() %} {% for error in errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endfor %} {% endfor %}
+      <div class="mb-3">
+        {{ form.imagens.label(class="form-label required-label") }} {{ form.imagens(id="input-imagens",
+        class="form-control", multiple=True, accept="image/*") }}
+        <div class="form-text">Cada imagem deve ter, no máximo, 3MB.</div>
+        <ul class="preview-list list-unstyled mt-3 d-flex flex-wrap gap-3"></ul>
+      </div>
+
+      <div class="mb-3">
+        {{ form.titulo.label(class="form-label required-label") }} {{ form.titulo(class="form-control") }}
+      </div>
+      <div class="mb-3">
+        {{ form.artista.label(class="form-label required-label") }} {{ form.artista(class="form-control") }}
+      </div>
+      <div class="mb-3">
+        {{ form.preco.label(class="form-label required-label") }} {{ form.preco(class="form-control", type="number",
+        step="0.01", min="1") }}
+      </div>
+      <div class="mb-3">
+        {{ form.estado.label(class="form-label required-label") }} {{ form.estado(class="form-control") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.formato.label(class="form-label required-label") }} {{ form.formato(class="form-control") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.descricao.label(class="form-label") }} {{ form.descricao(class="form-control", rows="3") }}
+      </div>
+
+      <div class="mb-3">{{ form.ano.label(class="form-label") }} {{ form.ano(class="form-control") }}</div>
+
+      <div class="mb-3">
+        {{ form.categorias.label(class="form-label required-label") }} {{ form.categorias(class="form-select",
+        multiple=True) }}
+          <div class="form-text">Mantenha a tecla Ctrl (ou Cmd no Mac) pressionada para selecionar múltiplas tags.</div>
+      </div>
+      <div class="mb-3">
+        {{ form.tags.label(class="form-label") }} {{ form.tags(class="form-control", id="tag-input") }}
+        <div class="form-text">Escreva e pressione enter ou vírgula. Ex: rock, soul, clássico</div>
+      </div>
+
+      <div class="row" id="campo-dimensoes">
+        <div class="col-md-4 mb-3">
+          {{ form.altura_cm.label(class="form-label") }} {{ form.altura_cm(class="form-control", type="number",
+          step="0.1", min="0") }}
+        </div>
+        <div class="col-md-4 mb-3">
+          {{ form.largura_cm.label(class="form-label") }} {{ form.largura_cm(class="form-control", type="number",
+          step="0.1", min="0") }}
+        </div>
+        <div class="col-md-4 mb-3">
+          {{ form.profundidade_cm.label(class="form-label") }} {{ form.profundidade_cm(class="form-control",
+          type="number", step="0.1", min="0") }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn w-100 btn-purple-card">Criar Anúncio</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById("input-imagens");
+
+  input.addEventListener("change", function () {
+    let preview = document.querySelector(".preview-list");
+    preview.innerHTML = "";
+
+    const files = Array.from(this.files);
+
+    if (files.length > 5) {
+      alert("Pode enviar no máximo 5 imagens.");
+      input.value = "";
+      return;
+    }
+
+    files.forEach((file) => {
+      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+        alert(`"${file.name}" não é um ficheiro de imagem permitido.`);
+        input.value = "";
+        return;
+      }
+
+      if (file.size > 3 * 1024 * 1024) {
+        alert(`"${file.name}" excede 3MB.`);
+        input.value = "";
+        return;
+      }
+
+      const li = document.createElement("li");
+      li.className = "d-flex flex-column align-items-center";
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const imgPreview = document.createElement("img");
+        imgPreview.src = e.target.result;
+        imgPreview.className = "rounded mb-2 border";
+        imgPreview.style.width = "80px";
+        imgPreview.style.height = "80px";
+        imgPreview.style.objectFit = "cover";
+
+        const fileName = document.createElement("span");
+        fileName.textContent = file.name;
+
+        const btn = document.createElement("button");
+        btn.textContent = "❌";
+        btn.type = "button";
+        btn.className = "btn btn-sm btn-outline-danger mt-1";
+
+        btn.onclick = () => {
+          const dt = new DataTransfer();
+          const newFiles = files.filter((f) => f !== file);
+          newFiles.forEach((f) => dt.items.add(f));
+          input.files = dt.files;
+          li.remove();
+        };
+
+        li.appendChild(imgPreview);
+        li.appendChild(fileName);
+        li.appendChild(btn);
+        preview.appendChild(li);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  });
+</script>
+
+<script>
+  const input1 = document.getElementById("tag-input");
+  if (input1) {
+    new Tagify(input1, {
+      whitelist: [], // opcional: lista de sugestões
+      dropdown: {
+        enabled: 0,
+        closeOnSelect: false,
+      },
+    });
+  }
+</script>
+
+<!-- Tagify para estilizar tags -->
+<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" />
+
+<script>
+  const tagInput = document.querySelector("#tag-input");
+  if (tagInput) {
+    new Tagify(tagInput, {
+      whitelist: [],
+      dropdown: {
+        enabled: 0,
+      },
+    });
+  }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const formatoInput = document.getElementById("formato");
+  const campoDimensoes = document.getElementById("campo-dimensoes");
+
+  // Executa ao carregar a página
+  atualizarVisibilidadeDimensoes();
+
+  // Executa sempre que o formato muda
+  formatoInput.addEventListener("change", atualizarVisibilidadeDimensoes);
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block titulo %}Caixa de Entrada{% endblock %}
+
+{% block conteudo %}
+<div class="container mt-5">
+  <h1 class="fw-bold mb-4"><i class="bi bi-envelope-fill"></i> Conversas</h1>
+
+  {% if conversas|length == 0 %}
+    <div class="alert alert-info text-center">Não há mensagens na sua caixa de entrada.</div>
+  {% else %}
+    <ul class="list-group">
+      {% for (parceiro_id, anuncio_id), (parceiro, mensagens_lista, titulo_artigo, artista_artigo) in conversas.items() %}
+  {% set ultima = mensagens_lista[-1] %}
+  <li class="list-group-item d-flex justify-content-between align-items-center position-relative">
+    <a
+      href="{{ url_for('mensagens.conversa', utilizador_id=parceiro_id, anuncio_id=anuncio_id) }}"
+      class="text-decoration-none flex-grow-1 text-dark d-flex flex-column abrir-conversa"
+    >
+      <strong class="link-body-emphasis">{{ parceiro.nome }}</strong>
+
+      <small class="text-secondary">
+  Artigo: {{ titulo_artigo }}
+  {% if artista_artigo %} - {{ artista_artigo }}{% endif %}
+</small>
+
+
+      <small class="text-muted">
+        {% if ultima.remetente_id == current_user.id %}
+          Você:
+        {% else %}
+          {{ parceiro.nome }}:
+        {% endif %}
+        {{ ultima.conteudo[:30] ~ ('...' if ultima.conteudo|length > 30 else '') }}
+        <span class="ms-2 text-secondary">· {{ ultima.data_envio.strftime('%d/%m %H:%M') }}</span>
+      </small>
+    </a>
+
+    {% set nao_lidas = mensagens_lista
+        |selectattr('lida', 'equalto', False)
+        |selectattr('remetente_id', 'equalto', parceiro_id)
+        |list|length %}
+    {% if nao_lidas > 0 %}
+      <span class="badge bg-danger rounded-pill ms-3 badge-nao-lida">{{ nao_lidas }}</span>
+    {% endif %}
+
+    <i class="bi bi-chevron-right text-secondary ms-2"></i>
+  </li>
+{% endfor %}
+
+    </ul>
+
+    <!-- Paginação -->
+    {% if mensagens.pages > 1 %}
+  <nav class="d-flex justify-content-center mt-4">
+    <ul class="pagination">
+      {% if mensagens.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('mensagens.caixa_entrada', pagina=mensagens.prev_num) }}">← Anterior</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">← Anterior</span></li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">Página {{ mensagens.page }} de {{ mensagens.pages }}</span>
+      </li>
+
+      {% if mensagens.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('mensagens.caixa_entrada', pagina=mensagens.next_num) }}">Próxima →</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Próxima →</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".abrir-conversa").forEach((link) => {
+      link.addEventListener("click", function () {
+        const item = this.closest("li");
+        const badge = item.querySelector(".badge-nao-lida");
+        if (badge) badge.remove();
+      });
+    });
+  });
+</script>
+{% endblock %}

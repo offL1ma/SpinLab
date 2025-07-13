@@ -1,0 +1,84 @@
+{% extends "base.html" %} {% block titulo %}Editar Perfil{% endblock %} {% block conteudo %}
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Editar Perfil</h1>
+
+  <form method="POST" enctype="multipart/form-data" class="card shadow p-4 mx-auto" style="max-width: 600px">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">{{ form.nome.label(class="form-label") }} {{ form.nome(class="form-control") }}</div>
+
+    <div class="mb-3">{{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }}</div>
+
+    <div class="mb-3">{{ form.senha.label(class="form-label") }} {{ form.senha(class="form-control") }}</div>
+
+    <div class="mb-3">
+      {{ form.confirmar_senha.label(class="form-label") }} {{ form.confirmar_senha(class="form-control") }}
+    </div>
+
+    <div class="mb-4 text-center">
+      <img
+        id="preview-foto"
+        src="{{ url_for('static', filename='uploads/perfis/' ~ current_user.foto_perfil) if current_user.foto_perfil else url_for('static', filename='img/default-user.png') }}"
+        alt="Foto atual"
+        class="rounded-circle border border-secondary mb-2"
+        style="width: 120px; height: 120px; object-fit: cover"
+        onerror='this.src="{{ url_for("static", filename="img/default-user.png") }}";'
+      />
+
+      <input type="checkbox" name="remover_foto" value="1" id="remover_foto" hidden />
+
+      <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="removerFotoPerfil()">
+        <i class="bi bi-trash"></i> Remover Foto
+      </button>
+    </div>
+
+    <div class="mb-4">
+      <label for="foto" class="form-label">Nova Foto de Perfil</label>
+      <input type="file" class="form-control" id="foto" name="foto" accept="image/*" />
+      <small class="form-text text-muted">Formatos permitidos: JPG, PNG, WEBP. Máximo 3MB.</small>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100">Atualizar Perfil</button>
+  </form>
+</div>
+
+<script>
+  const inputFoto = document.getElementById("foto");
+  const preview = document.getElementById("preview-foto");
+  const removerCheckbox = document.getElementById("remover_foto");
+
+  function removerFotoPerfil() {
+    if (!confirm("Tem a certeza que deseja remover a foto de perfil?")) return;
+
+    preview.src = "{{ url_for('static', filename='img/default-user.png') }}";
+    removerCheckbox.checked = true;
+    inputFoto.value = "";
+  }
+
+  inputFoto?.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const tiposValidos = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!tiposValidos.includes(file.type)) {
+      alert("Formato inválido. Apenas JPG, PNG, WEBP.");
+      this.value = "";
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("A imagem excede 3MB.");
+      this.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    removerCheckbox.checked = false;
+  });
+</script>
+{% endblock %}

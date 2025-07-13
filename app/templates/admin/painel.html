@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block titulo %}Painel de Administração{% endblock %} {% block conteudo %}
+
+<style>
+  .hover-raise {
+    transition: transform 0.2s ease;
+  }
+  .hover-raise:hover {
+    transform: translateY(-4px);
+  }
+</style>
+
+<section class="container mt-5">
+  <h2 class="fw-bold text-center mb-4">Resumo Administrativo</h2>
+
+  <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
+    <div class="col">
+      <a href="{{ url_for('admin.gerir_utilizadores') }}" style="text-decoration: none">
+        <div class="card text-center shadow h-100 hover-raise">
+          <div class="card-body">
+            <h5 class="card-title">👥 Utilizadores</h5>
+            <p class="display-6 fw-bold">{{ total_utilizadores }}</p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0">
+            <span class="btn btn-outline-primary pointer-none">Ver</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('admin.gerir_anuncios') }}" style="text-decoration: none">
+        <div class="card text-center shadow h-100 hover-raise">
+          <div class="card-body">
+            <h5 class="card-title">📦 Anúncios</h5>
+            <p class="display-6 fw-bold">{{ total_anuncios }}</p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0">
+            <span class="btn btn-outline-primary pointer-none">Ver</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col">
+      <a href="{{ url_for('admin.gerir_categorias') }}" class="text-decoration-none text-reset">
+        <div class="card text-center shadow h-100 hover-raise">
+          <div class="card-body">
+            <h5 class="card-title">📚 Categorias</h5>
+            <p class="display-6 fw-bold">{{ total_categorias }}</p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0">
+            <span class="btn btn-outline-primary pointer-none">Ver</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

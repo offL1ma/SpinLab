@@ -1,0 +1,230 @@
+{% extends "base.html" %} {% block titulo %}Editar Anúncio{% endblock %} {% block conteudo %}
+<div class="container mt-5">
+  <div class="card shadow p-4 mx-auto" style="max-width: 700px">
+    <h2 class="fw-bold mb-4"><i class="bi bi-pencil-square"></i> Editar Anúncio</h2>
+
+    <form method="POST" enctype="multipart/form-data" onsubmit="return validarAntesDeEnviar()">
+      {{ form.hidden_tag() }} {% for field, errors in form.errors.items() %} {% for error in errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endfor %} {% endfor %} {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {%
+      for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <input type="hidden" name="remover_imagens" id="remover-imagens" />
+
+      <div class="mb-3">
+        {{ form.imagens.label(class="form-label") }} {{ form.imagens(id="input-imagens", class="form-control",
+        multiple=True, accept="image/*") }}
+        <ul class="preview-list list-unstyled mt-3 d-flex flex-wrap gap-3"></ul>
+      </div>
+      {% if anuncio.imagens.count() > 0 %}
+      <p class="mt-4"><strong>Imagens atuais:</strong></p>
+      <div class="imagens-adicionais d-flex flex-wrap gap-3 mt-3">
+        {% for img in anuncio.imagens %}
+        <div class="imagem-item text-center" data-id="{{ img.id }}">
+          <img
+            src="{{ url_for('static', filename='uploads/' + img.nome_arquivo) }}"
+            class="border rounded"
+            style="width: 80px; height: 80px; object-fit: cover"
+          />
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm mt-1"
+            onclick="removerImagemPersistente(this, {{ img.id }})"
+          >
+            ❌
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="mb-3">{{ form.titulo.label(class="form-label") }} {{ form.titulo(class="form-control") }}</div>
+      <div class="mb-3">{{ form.artista.label(class="form-label") }} {{ form.artista(class="form-control") }}</div>
+      <div class="mb-3">
+        {{ form.preco.label(class="form-label") }} {{ form.preco(class="form-control", type="number", step="0.01",
+        min="1") }}
+      </div>
+      <div class="mb-3">{{ form.estado.label(class="form-label") }} {{ form.estado(class="form-control") }}</div>
+
+      <div class="mb-3">{{ form.formato.label(class="form-label") }} {{ form.formato(class="form-control") }}</div>
+
+      <div class="mb-3">
+        {{ form.descricao.label(class="form-label") }} {{ form.descricao(class="form-control", rows="3") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.ano.label(class="form-label") }} {{ form.ano(class="form-control", type="number", step="1") }}
+      </div>
+
+      <div class="mb-3">
+        {{ form.categorias.label(class="form-label") }} {{ form.categorias(class="form-control", multiple=True) }}
+      </div>
+      <div class="mb-3">
+        {{ form.tags.label(class="form-label") }} {{ form.tags(class="form-control", id="tag-input") }}
+        <div class="form-text">Escreva e pressione enter ou vírgula. Ex: rock, soul, clássico</div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          {{ form.altura_cm.label(class="form-label") }} {{ form.altura_cm(class="form-control", type="number",
+          step="0.1", min="0") }}
+        </div>
+        <div class="col-md-4 mb-3">
+          {{ form.largura_cm.label(class="form-label") }} {{ form.largura_cm(class="form-control", type="number",
+          step="0.1", min="0") }}
+        </div>
+        <div class="col-md-4 mb-3">
+          {{ form.profundidade_cm.label(class="form-label") }} {{ form.profundidade_cm(class="form-control",
+          type="number", step="0.1", min="0") }}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-purple-card w-100">Submeter Edições</button>
+    </form>
+  </div>
+</div>
+
+<!-- validação de imagens e preview -->
+<script>
+  function validarAntesDeEnviar() {
+    const existentes = document.querySelectorAll(".imagens-adicionais .imagem-item").length;
+    const novas = input.files.length;
+    if (existentes + novas === 0) {
+      alert("⚠️ O anúncio deve conter pelo menos uma imagem.");
+      return false;
+    }
+    return true;
+  }
+
+  const input = document.getElementById("input-imagens");
+  const preview = document.querySelector(".preview-list") || document.createElement("ul");
+  preview.className = "preview-list list-unstyled mt-3 d-flex flex-wrap gap-3";
+  input.insertAdjacentElement("afterend", preview);
+
+  let imagensSelecionadas = [];
+
+  input.addEventListener("change", function () {
+    preview.innerHTML = "";
+    imagensSelecionadas = Array.from(this.files);
+    if (imagensSelecionadas.length > 5) {
+      alert("Pode enviar no máximo 5 imagens.");
+      input.value = "";
+      imagensSelecionadas = [];
+      return;
+    }
+
+    const dt = new DataTransfer();
+
+    imagensSelecionadas.forEach((file, index) => {
+      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+        alert(`"${file.name}" não é uma imagem válida (JPG, PNG, WEBP).`);
+        input.value = "";
+        preview.innerHTML = "";
+        return;
+      }
+
+      if (file.size > 3 * 1024 * 1024) {
+        alert(`"${file.name}" excede 3MB.`);
+        input.value = "";
+        preview.innerHTML = "";
+        return;
+      }
+
+      dt.items.add(file);
+
+      const li = document.createElement("li");
+      li.className = "d-flex flex-column align-items-center";
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.className = "rounded mb-2 border";
+        img.style.width = "80px";
+        img.style.height = "80px";
+        img.style.objectFit = "cover";
+
+        const fileName = document.createElement("span");
+        fileName.textContent = file.name;
+
+        const btn = document.createElement("button");
+        btn.textContent = "❌";
+        btn.type = "button";
+        btn.className = "btn btn-sm btn-outline-danger mt-1";
+        btn.onclick = () => {
+          const dt = new DataTransfer();
+          const newFiles = imagensSelecionadas.filter((f) => f !== file);
+          newFiles.forEach((f) => dt.items.add(f));
+          input.files = dt.files;
+          li.remove();
+        };
+
+        li.appendChild(img);
+        li.appendChild(fileName);
+        li.appendChild(btn);
+        preview.appendChild(li);
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    input.files = dt.files;
+  });
+
+  const imagensParaRemover = new Set();
+  window.removerImagemPersistente = function (botao, id) {
+    const item = botao.closest(".imagem-item");
+    if (!item) return;
+
+    const totalPersistentes = document.querySelectorAll(".imagens-adicionais .imagem-item").length;
+    const novasImagens = document.getElementById("input-imagens").files.length;
+
+    if (totalPersistentes === 1 && novasImagens === 0) {
+      alert("⚠️ Um anúncio não pode conter 0 imagens. Adicione novas antes de remover esta.");
+      return;
+    }
+
+    imagensParaRemover.add(id);
+    document.getElementById("remover-imagens").value = [...imagensParaRemover].join(",");
+    item.remove();
+  };
+
+  document.querySelectorAll(".imagens-adicionais img").forEach((img) => {
+    img.onerror = function () {
+      const wrapper = img.closest(".imagem-item");
+      if (wrapper) wrapper.remove();
+    };
+  });
+</script>
+
+<!-- converter tags para string ao enviar para a rota -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tagInput = document.querySelector("#tag-input");
+    if (tagInput) {
+      const valoresIniciais = tagInput.value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .map((tag) => ({ value: tag }));
+
+      const tagify = new Tagify(tagInput, {
+        delimiters: ",",
+        dropdown: { enabled: 0 },
+      });
+
+      tagify.loadOriginalValues(valoresIniciais);
+
+      tagInput.closest("form").addEventListener("submit", () => {
+        const valores = tagify.value.map((t) => t.value.trim()).filter(Boolean);
+        tagInput.value = valores.join(", ");
+      });
+    }
+  });
+</script>
+
+{% endblock %}

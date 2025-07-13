@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block titulo %}Meus Favoritos{% endblock %} {% block conteudo %}
+
+<div class="container mt-5">
+  <h2 class="fw-bold mb-4">Anúncios marcados como Favorito</h2>
+
+  {% if favoritos.total == 0 %}
+  <div class="alert alert-info text-center">Não tem nenhum anúncio marcado como favorito por enquanto!</div>
+  <div class="text-center">
+    <a href="{{ url_for('anuncios.listar') }}" class="btn btn-purple-card">Explorar Anúncios</a>
+  </div>
+  {% else %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3 align-items-stretch">
+    {% for favorito in favoritos.items %}
+    <div class="col">
+      <div class="card h-100 shadow-sm position-relative" style="max-height: 500px">
+        <div class="bg-transparent" style="height: 200px; overflow: hidden">
+          <img
+            src="{{ url_for('static', filename='uploads/' + favorito.anuncio.imagem) }}"
+            class="card-img-top img-fluid"
+            alt="{{ favorito.anuncio.titulo }}"
+            style="width: 100%; height: 100%; object-fit: contain"
+            onerror="this.remove();"
+          />
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ favorito.anuncio.titulo }}</h5>
+          <h5 class="card-title text-success">{{favorito.anuncio.preco}} €</h5>
+          <p class="card-text text-muted">{{ favorito.anuncio.artista }} – {{ favorito.anuncio.ano }}</p>
+        </div>
+        <div class="card-footer d-flex justify-content-between flex-wrap gap-2">
+          <form method="POST" action="{{ url_for('utilizadores.remover_favorito', anuncio_id=favorito.anuncio.id) }}">
+            {{ form.csrf_token }}
+            <button type="submit" class="btn btn-outline-danger btn-sm">Remover</button>
+          </form>
+          <a href="{{ url_for('anuncios.detalhes', id=favorito.anuncio.id) }}" class="btn btn-outline-primary btn-sm"
+            >Ver</a
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Paginação -->
+  <nav aria-label="Paginação" class="mt-5">
+    <ul class="pagination justify-content-center">
+      {% for page_num in favoritos.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %} {% if
+      page_num %}
+      <li class="page-item {% if page_num == favoritos.page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('utilizadores.favoritos', pagina=page_num) }}">{{ page_num }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %} {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+{% endblock %}

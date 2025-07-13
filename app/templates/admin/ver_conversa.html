@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<h2>Conversa entre {{ utilizador1.nome }} e {{ utilizador2.nome }}</h2>
+
+{% if mensagens %}
+    <ul class="list-group my-3">
+        {% for msg in mensagens %}
+        <li class="list-group-item">
+            <strong>{{ msg.remetente.nome }}:</strong>
+            <p>{{ msg.conteudo }}</p>
+            <small class="text-muted">{{ msg.data_envio.strftime('%d/%m/%Y %H:%M') }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Não há mensagens entre estes utilizadores.</p>
+{% endif %}
+
+<a href="{{ url_for('admin.gerir_utilizadores') }}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}
