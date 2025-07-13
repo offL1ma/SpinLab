@@ -112,6 +112,12 @@ def create_app():
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=limpar_anuncios_antigos, trigger="interval", days=1)
     scheduler.start()
+    
+    @app.route("/init-db")
+    def init_db():
+        with app.app_context():
+            db.create_all()
+        return "Tabelas criadas com sucesso."
 
     return app
     # endregion criação da app Flask
