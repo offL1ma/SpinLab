@@ -118,6 +118,17 @@ def create_app():
         with app.app_context():
             db.create_all()
         return "Tabelas criadas com sucesso."
+        
+    @app.route("/criar-admin")
+    def criar_admin():
+        from .models import Utilizador
+        if not Utilizador.query.filter_by(papel="admin").first():
+            admin = Utilizador(nome="Admin", email="admin@spinlab.com", papel="admin")
+            admin.definir_senha("admin")  # Palavra-passe: admin
+            db.session.add(admin)
+            db.session.commit()
+            return "Admin criado com sucesso!"
+        return "Admin já existe."
 
     return app
     # endregion criação da app Flask
