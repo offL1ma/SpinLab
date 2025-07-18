@@ -1,4 +1,4 @@
-publically hosted at tais.nunobraga.com
+# publically hosted at tais.nunobraga.com
 
 # 🎧 SpinLab – Music Marketplace Platform
 
